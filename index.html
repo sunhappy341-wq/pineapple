@@ -3,176 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pineapple 官方网站 - 只有菠萝，超越菠萝</title>
+    <title>🍍 Pineapple Ecosystem - 超越想象</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --accent: #FFD700;
-            --bg: #000000;
-            --card-bg: #161617;
-            --text-gray: #86868b;
+            --accent-gold: #FFD700;
+            --dark-bg: #000000;
+            --light-text: #E0E0E0;
+            --subtle-gray: #888888;
+            --glass-blur: rgba(255, 255, 255, 0.05);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg); color: #fff;
+            background: var(--dark-bg);
+            color: var(--light-text);
             font-family: -apple-system, "SF Pro Display", sans-serif;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* 顶部导航栏 - 微信/QQ 适配版 */
+        /* 粒子背景画布 */
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; opacity: 0.6;
+        }
+
+        /* 顶部导航 */
         nav {
-            position: fixed; top: 0; width: 100%; height: 48px;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
-            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            position: fixed; top: 0; width: 100%; height: 55px;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(25px);
+            z-index: 1000; display: flex; justify-content: space-around; align-items: center;
             border-bottom: 0.5px solid rgba(255,255,255,0.1);
+            padding: 0 20px;
         }
-
-        nav ul { display: flex; list-style: none; gap: 20px; }
-        nav ul li { 
-            font-size: 12px; color: #f5f5f7; cursor: pointer; 
-            opacity: 0.8; transition: 0.3s;
+        nav .logo { font-size: 24px; color: var(--accent-gold); font-weight: bold; }
+        nav ul { list-style: none; display: flex; gap: 30px; }
+        nav ul li {
+            font-size: 14px; color: var(--light-text); cursor: pointer;
+            position: relative; transition: 0.3s;
         }
-        nav ul li:hover { opacity: 1; color: var(--accent); }
-
-        /* 内容容器 */
-        .page-content { margin-top: 48px; display: none; min-height: calc(100vh - 48px); }
-        .page-content.active { display: block; animation: fadeIn 0.8s ease; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        nav ul li::after {
+            content: ''; position: absolute; left: 0; bottom: -5px;
+            width: 0; height: 2px; background: var(--accent-gold);
+            transition: width 0.3s ease;
         }
+        nav ul li:hover::after { width: 100%; }
+        nav ul li:hover { color: var(--accent-gold); }
 
-        /* 统一产品展示样式 */
-        .hero-section {
-            height: 80vh; display: flex; flex-direction: column;
+        /* 产品展示区 */
+        .product-section {
+            height: 100vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
-            padding: 20px;
+            padding: 0 20px; position: relative;
+            perspective: 1000px; /* 3D 视角 */
         }
 
-        .title { font-size: 48px; font-weight: 600; margin-bottom: 10px; }
-        .subtitle { font-size: 20px; color: var(--text-gray); margin-bottom: 30px; }
-        
-        .product-image {
-            font-size: 100px; filter: drop-shadow(0 0 30px rgba(255,215,0,0.3));
-            margin-bottom: 40px; animation: float 4s ease-in-out infinite;
+        .section-title {
+            font-size: clamp(40px, 8vw, 90px); font-weight: 700;
+            background: linear-gradient(180deg, #fff 40%, rgba(255,255,255,0.2) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px; z-index: 10;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .section-subtitle {
+            font-size: clamp(18px, 3vw, 24px); color: var(--subtle-gray);
+            margin-bottom: 40px; z-index: 10;
         }
 
-        .buy-btn {
-            background: #0071e3; color: white; padding: 12px 30px;
-            border-radius: 20px; text-decoration: none; font-weight: 500;
-            transition: 0.3s;
+        /* 模拟 3D 产品容器 */
+        .product-3d-container {
+            width: clamp(250px, 60vw, 400px);
+            height: clamp(350px, 80vw, 600px);
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(15deg) rotateY(-15deg); /* 初始 3D 倾斜 */
+            transition: transform 0.5s ease-out;
         }
-        .buy-btn:hover { background: #147ce5; transform: scale(1.05); }
 
-        /* 参数网格 */
-        .specs-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            padding: 20px; max-width: 600px; margin: 0 auto 50px auto;
+        .product-face {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(145deg, #222, #000);
+            border: 5px solid #444; border-radius: 40px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: clamp(80px, 15vw, 150px);
+            color: var(--light-text);
+            backface-visibility: hidden; /* 防止背面闪烁 */
+            box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+            opacity: 0.95;
+            transition: all 0.5s ease-out;
         }
-        .spec-box {
-            background: var(--card-bg); padding: 20px; border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .spec-box h4 { color: var(--accent); font-size: 20px; }
-        .spec-box p { font-size: 12px; color: var(--text-gray); margin-top: 5px; }
 
-        footer { padding: 40px 20px; text-align: center; color: #444; font-size: 10px; }
+        .product-face.front {
+            transform: translateZ(20px);
+            box-shadow: 0 0 100px var(--accent-gold); /* 发光 */
+        }
+        .product-face.back {
+            transform: rotateY(180deg) translateZ(20px);
+        }
+        .product-face.left {
+            width: 40px; transform: translateX(-20px) rotateY(-90deg) translateZ(200px);
+            background: #333;
+        }
+        .product-face.right {
+            width: 40px; transform: translateX(calc(100% - 20px)) rotateY(90deg) translateZ(200px);
+            background: #333;
+        }
+        /* 简化 3D 效果，主要靠 transform: translateZ 和 rotateY */
+
+
+        /* 产品详情弹窗 */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(15px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1001; opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .modal.active { opacity: 1; pointer-events: all; }
+
+        .modal-content {
+            background: var(--dark-bg); border-radius: 25px; padding: 30px;
+            max-width: 90%; max-height: 90vh; overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+            transform: translateY(20px); opacity: 0; transition: all 0.4s ease;
+        }
+        .modal.active .modal-content { transform: translateY(0); opacity: 1; }
+
+        .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 30px; color: var(--subtle-gray); cursor: pointer;
+        }
+        .modal-close:hover { color: var(--light-text); }
+
+        .modal h3 { font-size: 36px; margin-bottom: 20px; color: var(--accent-gold); }
+        .modal p { font-size: 16px; line-height: 1.6; color: var(--subtle-gray); margin-bottom: 15px; }
+        .modal ul { list-style: none; margin-bottom: 20px; }
+        .modal ul li { background: var(--glass-blur); padding: 10px 15px; border-radius: 10px; margin-bottom: 8px; }
+
+        .modal .product-video-placeholder {
+            width: 100%; height: 200px; background: #333; border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 18px; color: var(--subtle-gray); margin-top: 20px;
+        }
+
+        /* 购买按钮 */
+        .buy-button {
+            display: inline-block; padding: 15px 40px; background: #0071e3;
+            color: white; border-radius: 30px; text-decoration: none;
+            font-weight: 600; font-size: 18px; margin-top: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,113,227,0.4);
+        }
+        .buy-button:hover { background: #147ce5; transform: translateY(-5px); }
+
+        /* 媒体查询 - 响应式设计 */
+        @media (max-width: 768px) {
+            nav ul { gap: 15px; }
+            nav ul li { font-size: 11px; }
+            .section-title { font-size: clamp(30px, 10vw, 60px); }
+            .section-subtitle { font-size: clamp(16px, 4vw, 20px); }
+            .product-3d-container { width: 200px; height: 350px; }
+            .product-face { font-size: 80px; }
+            .modal h3 { font-size: 28px; }
+            .modal p { font-size: 14px; }
+        }
+
+        /* 底部 */
+        footer {
+            padding: 50px 20px; text-align: center; color: #444; font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <ul>
-        <li onclick="showPage('phone')">手机</li>
-        <li onclick="showPage('pad')">平板</li>
-        <li onclick="showPage('watch')">手表</li>
-        <li onclick="showPage('mac')">电脑</li>
-    </ul>
-</nav>
+    <canvas id="particle-canvas"></canvas>
 
-<div id="phone" class="page-content active">
-    <section class="hero-section">
-        <div class="product-image">📱</div>
-        <h1 class="title">Pineapple 16 Pro</h1>
-        <p class="subtitle">强得很，也甜得很。</p>
-        <a href="#" class="buy-btn">立即购买</a>
+    <nav>
+        <span class="logo">🍍Pineapple</span>
+        <ul>
+            <li onclick="scrollToSection('hero-phone')">手机</li>
+            <li onclick="scrollToSection('hero-pad')">平板</li>
+            <li onclick="scrollToSection('hero-watch')">手表</li>
+            <li onclick="scrollToSection('hero-mac')">电脑</li>
+        </ul>
+    </nav>
+
+    <section class="product-section" id="hero-phone">
+        <h1 class="section-title">Pineapple 16 Pro</h1>
+        <p class="section-subtitle">强得很，也甜得很。颠覆你的想象。</p>
+        <div class="product-3d-container" id="phone-3d">
+            <div class="product-face front">📱</div>
+        </div>
+        <a href="#" class="buy-button" onclick="showProductDetails('phone-details')">了解更多</a>
     </section>
-    <div class="specs-grid">
-        <div class="spec-box"><h4>P18 Pro</h4><p>地表最强芯片</p></div>
-        <div class="spec-box"><h4>全钛金属</h4><p>更轻更硬更菠萝</p></div>
-    </div>
-</div>
 
-<div id="pad" class="page-content">
-    <section class="hero-section">
-        <div class="product-image">平板</div>
-        <h1 class="title">Pineapple Pad Pro</h1>
-        <p class="subtitle">不仅是屏幕，更是画布。</p>
-        <a href="#" class="buy-btn">立即购买</a>
+    <section class="product-section" id="hero-pad">
+        <h1 class="section-title">Pineapple Pad Pro</h1>
+        <p class="section-subtitle">超视网膜液态屏，触碰未来。</p>
+        <div class="product-3d-container" id="pad-3d">
+            <div class="product-face front">平板</div>
+        </div>
+        <a href="#" class="buy-button" onclick="showProductDetails('pad-details')">了解更多</a>
     </section>
-    <div class="specs-grid">
-        <div class="spec-box"><h4>M4 芯片</h4><p>性能怪兽</p></div>
-        <div class="spec-box"><h4>OLED 屏</h4><p>极致丝滑体验</p></div>
-    </div>
-</div>
 
-<div id="watch" class="page-content">
-    <section class="hero-section">
-        <div class="product-image">⌚</div>
-        <h1 class="title">Pineapple Watch</h1>
-        <p class="subtitle">时刻在线，关注你的心跳。</p>
-        <a href="#" class="buy-btn">立即购买</a>
+    <section class="product-section" id="hero-watch">
+        <h1 class="section-title">Pineapple Watch Ultra</h1>
+        <p class="section-subtitle">冒险家的腕上伙伴，探寻未知。</p>
+        <div class="product-3d-container" id="watch-3d">
+            <div class="product-face front">⌚</div>
+        </div>
+        <a href="#" class="buy-button" onclick="showProductDetails('watch-details')">了解更多</a>
     </section>
-    <div class="specs-grid">
-        <div class="spec-box"><h4>全天续航</h4><p>不再有电量焦虑</p></div>
-        <div class="spec-box"><h4>健康监测</h4><p>心率血氧一目了然</p></div>
-    </div>
-</div>
 
-<div id="mac" class="page-content">
-    <section class="hero-section">
-        <div class="product-image">💻</div>
-        <h1 class="title">Pineapple Mac</h1>
-        <p class="subtitle">工作，从此游刃有余。</p>
-        <a href="#" class="buy-btn">立即购买</a>
+    <section class="product-section" id="hero-mac">
+        <h1 class="section-title">Pineapple Mac Studio</h1>
+        <p class="section-subtitle">为创意而生，性能巅峰。</p>
+        <div class="product-3d-container" id="mac-3d">
+            <div class="product-face front">💻</div>
+        </div>
+        <a href="#" class="buy-button" onclick="showProductDetails('mac-details')">了解更多</a>
     </section>
-    <div class="specs-grid">
-        <div class="spec-box"><h4>32GB 统一内存</h4><p>多开不卡顿</p></div>
-        <div class="spec-box"><h4>视网膜显示屏</h4><p>色彩精准到位</p></div>
+
+    <footer>
+        Copyright © 2025 Pineapple Inc. All rights reserved.<br>
+        此为演示页面，非真实产品。
+    </footer>
+
+    <div id="phone-details" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('phone-details')">&times;</span>
+            <h3>Pineapple 16 Pro 详情</h3>
+            <p>搭载全新 P18 Pro 芯片，3nm 工艺，性能提升 40%。配备 4800 万像素超广角菠萝摄像头，支持 8K 电影级视频录制。</p>
+            <ul>
+                <li>⚡️ P18 Pro 芯片</li>
+                <li>📸 48MP 超广角</li>
+                <li>🔋 5000mAh 续航</li>
+                <li>💧 IP68 级防尘防水</li>
+            </ul>
+            <div class="product-video-placeholder">产品演示视频占位符</div>
+            <a href="#" class="buy-button" onclick="alert('已加入购物车！')">立即购买</a>
+        </div>
     </div>
-</div>
 
-<footer>
-    Copyright © 2025 Pineapple Inc. All rights reserved.<br>
-    此为演示页面，非真实产品。
-</footer>
+    <div id="pad-details" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('pad-details')">&times;</span>
+            <h3>Pineapple Pad Pro 详情</h3>
+            <p>13英寸超视网膜 XDR 液态显示屏，刷新率高达 120Hz。配备 M4 菠萝芯片，轻松处理专业级应用和游戏。</p>
+            <ul>
+                <li>🚀 M4 Pro 芯片</li>
+                <li>🖥️ 13寸 OLED 显示</li>
+                <li>✍️ 支持二代菠萝笔</li>
+                <li>🔋 10 小时续航</li>
+            </ul>
+            <div class="product-video-placeholder">产品演示视频占位符</div>
+            <a href="#" class="buy-button" onclick="alert('已加入购物车！')">立即购买</a>
+        </div>
+    </div>
 
-<script>
-    function showPage(pageId) {
-        // 隐藏所有页面
-        const pages = document.querySelectorAll('.page-content');
-        pages.forEach(page => page.classList.remove('active'));
-        
-        // 显示点击的页面
-        const targetPage = document.getElementById(pageId);
-        targetPage.classList.add('active');
+    <div id="watch-details" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('watch-details')">&times;</span>
+            <h3>Pineapple Watch Ultra 详情</h3>
+            <p>航空级钛金属表壳，专为极限运动设计。双频 GPS，深度防水，是户外探险的理想选择。</p>
+            <ul>
+                <li>🌊 100米防水</li>
+                <li>❤️ 实时心率监测</li>
+                <li>🛰️ 双频 GPS</li>
+                <li>🔋 36小时长续航</li>
+            </ul>
+            <div class="product-video-placeholder">产品演示视频占位符</div>
+            <a href="#" class="buy-button" onclick="alert('已加入购物车！')">立即购买</a>
+        </div>
+    </div>
 
-        // 滚动回到顶部
-        window.scrollTo(0, 0);
+    <div id="mac-details" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('mac-details')">&times;</span>
+            <h3>Pineapple Mac Studio 详情</h3>
+            <p>搭载 M3 Ultra 芯片，最高支持 192GB 统一内存。接口丰富，为专业用户提供极致工作站体验。</p>
+            <ul>
+                <li>🧠 M3 Ultra 芯片</li>
+                <li>💾 最高 192GB RAM</li>
+                <li>💨 高效散热系统</li>
+                <li>🔗 Thunderbolt 4 接口</li>
+            </ul>
+            <div class="product-video-placeholder">产品演示视频占位符</div>
+            <a href="#" class="buy-button" onclick="alert('已加入购物车！')">立即购买</a>
+        </div>
+    </div>
 
-        // 手机震动反馈（如果浏览器支持）
-        if (window.navigator.vibrate) {
-            window.navigator.vibrate(10);
+    <script>
+        // GSAP 注册插件
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 导航栏点击平滑滚动
+        function scrollToSection(id) {
+            gsap.to(window, { duration: 1.2, scrollTo: `#${id}`, ease: "power2.inOut" });
+            // 手机震动反馈
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(10);
+            }
         }
-    }
-</script>
 
+        // 产品详情弹窗
+        function showProductDetails(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 禁止背景滚动
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+
+        // Three.js 粒子背景
+        let scene, camera, renderer, particles;
+        const particleCount = 1000;
+        const particleGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        function initParticles() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('particle-canvas'), alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 100;
+                positions[i + 1] = (Math.random() - 0.5) * 100;
+                positions[i + 2] = (Math.random() - 0.5) * 100;
+
+                velocities[i] = (Math.random() - 0.5) * 0.05;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.05;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.05;
+            }
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                color: varCSS('--accent-gold'), // 使用 CSS 变量
+                size: 0.1,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+
+            camera.position.z = 5;
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function varCSS(name) {
+            return new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(name));
+        }
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+
+            const positions = particleGeometry.attributes.position.array;
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] += velocities[i];
+                positions[i + 1] += velocities[i + 1];
+                positions[i + 2] += velocities[i + 2];
+
+                // 粒子超出边界后重置
+                if (Math.abs(positions[i]) > 50) positions[i] = -(positions[i]);
+                if (Math.abs(positions[i + 1]) > 50) positions[i + 1] = -(positions[i + 1]);
+                if (Math.abs(positions[i + 2]) > 50) positions[i + 2] = -(positions[i + 2]);
+            }
+            particleGeometry.attributes.position.needsUpdate = true;
+            particles.rotation.y += 0.0005;
+            particles.rotation.x += 0.0002;
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        initParticles();
+        animateParticles();
+
+
+        // GSAP 滚动动画
+        const products = document.querySelectorAll('.product-section');
+        products.forEach((product, index) => {
+            const product3d = product.querySelector('.product-3d-container');
+
+            gsap.fromTo(product3d,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: 100,
+                    rotationX: index % 2 === 0 ? 30 : -30,
+                    rotationY: index % 2 === 0 ? -30 : 30,
+                    z: -100 // 初始状态在后面
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    rotationX: 0,
+                    rotationY: 0,
+                    z: 0,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: product,
+                        start: "top center+=10%", // 提前一点触发
+                        end: "bottom center-=10%",
+                        scrub: 1, // 平滑跟随滚动
+                    }
+                }
+            );
+
+            // 标题和副标题的滚动淡入
+            gsap.from(product.querySelector('.section-title'), {
+                opacity: 0,
+                y: 50,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: product,
+                    start: "top center+=20%",
+                    end: "bottom center-=20%",
+                    scrub: true,
+                }
+            });
+            gsap.from(product.querySelector('.section-subtitle'), {
+                opacity: 0,
+                y: 30,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: product,
+                    start: "top center+=25%",
+                    end: "bottom center-=25%",
+                    scrub: true,
+                }
+            });
+        });
+    </script>
 </body>
 </html>
