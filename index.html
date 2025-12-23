@@ -4,41 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🍍 Pineapple Ecosystem - 科技巅峰</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    
     <style>
         :root { --accent: #FFD700; --bg: #000; --text: #eee; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow-x: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, "PingFang SC", sans-serif; overflow-x: hidden; }
         
-        /* 粒子背景 */
-        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.5; }
+        /* 1. 修复背景层级：确保在最底层且不遮挡点击 */
+        #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
-        /* 导航 */
-        nav { position: fixed; top: 0; width: 100%; height: 50px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 1000; display: flex; justify-content: center; align-items: center; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+        /* 2. 导航栏加固 */
+        nav { position: fixed; top: 0; width: 100%; height: 50px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 1000; display: flex; justify-content: center; align-items: center; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
         nav ul { display: flex; list-style: none; gap: 20px; }
         nav ul li { font-size: 13px; cursor: pointer; transition: 0.3s; color: #888; }
-        nav ul li:hover { color: var(--accent); }
+        nav ul li.active { color: var(--accent); font-weight: bold; }
 
-        /* 页面板块 */
-        .section { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        /* 3. 页面板块 */
+        .section { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; position: relative; }
         .title { font-size: clamp(32px, 8vw, 80px); font-weight: 700; background: linear-gradient(180deg, #fff, #444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* 3D 容器 */
-        .product-3d { width: 280px; height: 450px; background: linear-gradient(145deg, #111, #000); border: 4px solid #333; border-radius: 40px; margin: 30px 0; display: flex; justify-content: center; align-items: center; font-size: 100px; box-shadow: 0 0 50px rgba(255,215,0,0.2); transition: 0.5s; }
+        .product-3d { width: 240px; height: 420px; background: linear-gradient(145deg, #111, #000); border: 2px solid #333; border-radius: 40px; margin: 30px 0; display: flex; justify-content: center; align-items: center; font-size: 80px; box-shadow: 0 0 50px rgba(255,215,0,0.1); }
 
-        /* 弹窗 */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: 0.4s; }
-        .modal.active { display: flex; opacity: 1; }
-        .modal-content { background: #111; width: 90%; max-width: 500px; border-radius: 20px; padding: 25px; border: 1px solid #333; position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; }
+        /* 4. 修复弹窗显示逻辑 */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; }
+        .modal.active { display: flex; opacity: 1; transition: opacity 0.4s; }
+        .modal-content { background: #111; width: 90%; max-width: 500px; border-radius: 20px; padding: 25px; border: 1px solid #333; position: relative; transform: translateY(30px); transition: 0.4s; }
+        .modal.active .modal-content { transform: translateY(0); }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #888; z-index: 10; }
 
-        /* B站视频容器适配 */
+        /* 5. B站视频容器强制比例 */
         .video-wrapper { position: relative; width: 100%; height: 0; padding-bottom: 56.25%; margin: 20px 0; border-radius: 12px; overflow: hidden; background: #000; }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:none; }
 
-        .buy-btn { display: inline-block; padding: 12px 35px; background: #0071e3; color: #fff; border-radius: 25px; text-decoration: none; font-weight: 600; margin-top: 20px; }
+        .buy-btn { display: inline-block; padding: 12px 35px; background: #0071e3; color: #fff; border-radius: 25px; text-decoration: none; font-weight: 600; margin-top: 20px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -47,99 +49,139 @@
 
 <nav>
     <ul>
-        <li onclick="gsap.to(window, {scrollTo: '#phone', duration: 1})">手机</li>
-        <li onclick="gsap.to(window, {scrollTo: '#pad', duration: 1})">平板</li>
-        <li onclick="gsap.to(window, {scrollTo: '#watch', duration: 1})">手表</li>
+        <li id="nav-phone" class="active" onclick="go('phone')">手机</li>
+        <li id="nav-pad" onclick="go('pad')">平板</li>
+        <li id="nav-watch" onclick="go('watch')">手表</li>
     </ul>
 </nav>
 
 <section class="section" id="phone">
     <h1 class="title">Pineapple 16 Pro</h1>
-    <div class="product-3d">📱</div>
-    <a href="javascript:void(0)" class="buy-btn" onclick="openModal('phone-vid')">观看预告片</a>
+    <div class="product-3d" id="p1">📱</div>
+    <button class="buy-btn" onclick="openModal('phone-vid')">观看预告片</button>
 </section>
 
 <section class="section" id="pad">
     <h1 class="title">Pineapple Pad</h1>
-    <div class="product-3d">💻</div>
-    <a href="javascript:void(0)" class="buy-btn" onclick="openModal('pad-vid')">性能展示</a>
+    <div class="product-3d" id="p2">💻</div>
+    <button class="buy-btn" onclick="openModal('pad-vid')">性能展示</button>
 </section>
 
-<div id="phone-vid" class="modal">
+<section class="section" id="watch">
+    <h1 class="title">Pineapple Watch</h1>
+    <div class="product-3d" id="p3">⌚</div>
+    <button class="buy-btn" onclick="alert('即将上市！')">了解更多</button>
+</section>
+
+<div id="phone-vid" class="modal" onclick="if(event.target==this) closeModal('phone-vid')">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('phone-vid')">&times;</span>
         <h2 style="color:var(--accent)">16 Pro 官方预告</h2>
         <div class="video-wrapper">
-            <iframe id="bili-frame-1" src="//player.bilibili.com/player.html?bvid=BV1GJ411x7h7&page=1&high_quality=1&as_wide=1&allowfullscreen=true" scrolling="no" border="0" frameborder="no" framespacing="0"></iframe>
+            <iframe src="//player.bilibili.com/player.html?bvid=BV1GJ411x7h7&page=1&high_quality=1" scrolling="no" frameborder="no" allowfullscreen="true"></iframe>
         </div>
-        <p style="color:#888; font-size:14px;">搭载 P18 Pro 芯片，重塑性能巅峰。</p>
-        <button class="buy-btn" style="width:100%" onclick="alert('装逼成功！这是模拟购买')">立即预订</button>
+        <button class="buy-btn" style="width:100%" onclick="alert('预订成功！')">立即预订</button>
     </div>
 </div>
 
-<div id="pad-vid" class="modal">
+<div id="pad-vid" class="modal" onclick="if(event.target==this) closeModal('pad-vid')">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('pad-vid')">&times;</span>
         <h2 style="color:var(--accent)">Pad Pro 生产力</h2>
         <div class="video-wrapper">
-            <iframe id="bili-frame-2" src="//player.bilibili.com/player.html?bvid=BV1v4411Z7of&page=1&high_quality=1" scrolling="no" border="0" frameborder="no" framespacing="0"></iframe>
+            <iframe src="//player.bilibili.com/player.html?bvid=BV1v4411Z7of&page=1&high_quality=1" scrolling="no" frameborder="no" allowfullscreen="true"></iframe>
         </div>
-        <button class="buy-btn" style="width:100%" onclick="alert('Pad Pro 已加入购物车')">立即预订</button>
+        <button class="buy-btn" style="width:100%" onclick="alert('已加入购物车')">立即预订</button>
     </div>
 </div>
 
 <script>
-    // 弹窗逻辑
+    // 1. 修复滚动跳转逻辑
+    function go(id) {
+        gsap.to(window, { duration: 1, scrollTo: { y: "#" + id, offsetY: 0 }, ease: "power3.inOut" });
+    }
+
+    // 2. 弹窗开关逻辑修复
     function openModal(id) {
         const m = document.getElementById(id);
         m.style.display = 'flex';
-        setTimeout(() => m.classList.add('active'), 10);
+        setTimeout(() => m.classList.add('active'), 50);
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal(id) {
         const m = document.getElementById(id);
         m.classList.remove('active');
-        // 停止视频播放：刷新 iframe
+        // 关键：停止视频
         const frame = m.querySelector('iframe');
-        const tmpSrc = frame.src;
-        frame.src = '';
-        frame.src = tmpSrc;
+        const s = frame.src; frame.src = ''; frame.src = s;
         setTimeout(() => m.style.display = 'none', 400);
         document.body.style.overflow = '';
     }
 
-    // Three.js 粒子背景 (简化版)
-    const canvas = document.getElementById('particle-canvas');
-    const renderer = new THREE.WebGLRenderer({canvas, alpha: true});
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // 3. Three.js 背景渲染修复
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('particle-canvas'), alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
     const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(2000 * 3);
-    for(let i=0; i<6000; i++) pos[i] = (Math.random()-0.5) * 10;
+    const pos = new Float32Array(1500 * 3);
+    for(let i=0; i<4500; i++) pos[i] = (Math.random()-0.5) * 15;
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({color: 0xFFD700, size: 0.02});
+    const mat = new THREE.PointsMaterial({ color: 0xFFD700, size: 0.03, transparent: true, opacity: 0.6 });
     const points = new THREE.Points(geo, mat);
     scene.add(points);
+    camera.position.z = 5;
 
     function animate() {
         requestAnimationFrame(animate);
         points.rotation.y += 0.001;
+        points.rotation.x += 0.0005;
         renderer.render(scene, camera);
     }
     animate();
 
-    // 滚动动画
-    gsap.from(".product-3d", {
-        scrollTrigger: { trigger: ".product-3d", scrub: 1 },
-        rotateY: 360,
-        scale: 0.5,
-        opacity: 0
+    // 4. GSAP 滚动交互修复
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // 为每个手机模型添加旋转
+    [1,2,3].forEach(num => {
+        gsap.to(`#p${num}`, {
+            scrollTrigger: {
+                trigger: `#p${num}`,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1
+            },
+            rotateY: 360,
+            ease: "none"
+        });
+    });
+
+    // 导航栏自动亮起逻辑
+    const sections = ['phone', 'pad', 'watch'];
+    sections.forEach(id => {
+        ScrollTrigger.create({
+            trigger: "#" + id,
+            start: "top center",
+            end: "bottom center",
+            onEnter: () => setActive(id),
+            onEnterBack: () => setActive(id)
+        });
+    });
+
+    function setActive(id) {
+        document.querySelectorAll('nav li').forEach(li => li.classList.remove('active'));
+        document.getElementById('nav-' + id).classList.add('active');
+    }
+
+    // 窗口大小适配
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
     });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
 </body>
 </html>
