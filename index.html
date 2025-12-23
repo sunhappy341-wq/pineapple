@@ -3,128 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pineapple Phone - 只有菠萝，超越菠萝</title>
+    <title>Pineapple 官方网站 - 只有菠萝，超越菠萝</title>
     <style>
         :root {
-            --gold: #FFD700;
-            --dark: #000000;
-            --glass: rgba(255, 255, 255, 0.05);
+            --accent: #FFD700;
+            --bg: #000000;
+            --card-bg: #161617;
+            --text-gray: #86868b;
         }
 
-        body, html {
-            margin: 0; padding: 0;
-            background-color: var(--dark);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg); color: #fff;
+            font-family: -apple-system, "SF Pro Display", sans-serif;
             overflow-x: hidden;
-            scroll-behavior: smooth;
         }
 
-        /* 顶部导航 */
+        /* 顶部导航栏 - 微信/QQ 适配版 */
         nav {
-            position: fixed; top: 0; width: 100%; height: 50px;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
-            z-index: 100; display: flex; justify-content: center; align-items: center;
+            position: fixed; top: 0; width: 100%; height: 48px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
             border-bottom: 0.5px solid rgba(255,255,255,0.1);
         }
-        nav span { font-size: 14px; color: #a1a1a6; letter-spacing: 1px; }
 
-        /* 第一屏：Hero Section */
-        .hero {
-            height: 100vh;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            text-align: center; background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+        nav ul { display: flex; list-style: none; gap: 20px; }
+        nav ul li { 
+            font-size: 12px; color: #f5f5f7; cursor: pointer; 
+            opacity: 0.8; transition: 0.3s;
         }
+        nav ul li:hover { opacity: 1; color: var(--accent); }
 
-        .hero h1 {
-            font-size: 42px; margin: 0;
-            background: linear-gradient(180deg, #fff 0%, #888 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
+        /* 内容容器 */
+        .page-content { margin-top: 48px; display: none; min-height: calc(100vh - 48px); }
+        .page-content.active { display: block; animation: fadeIn 0.8s ease; }
 
-        .hero p { font-size: 18px; color: var(--gold); margin: 10px 0; font-weight: 300; }
-
-        /* 手机主体预览 */
-        .phone-preview {
-            width: 200px; height: 400px;
-            background: linear-gradient(145deg, #222, #000);
-            border: 4px solid #333; border-radius: 40px;
-            margin-top: 30px; position: relative;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.1);
-            transition: transform 0.5s ease;
-        }
-        .phone-preview:active { transform: scale(1.05) rotate(-2deg); }
-
-        .island {
-            width: 70px; height: 20px; background: #000;
-            margin: 15px auto; border-radius: 10px;
-        }
-
-        .screen-content {
-            text-align: center; margin-top: 100px; font-size: 50px;
-        }
-
-        /* 核心卖点区 */
-        .features { padding: 50px 20px; }
-        .card {
-            background: var(--glass);
-            border-radius: 24px; padding: 30px; margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card h3 { font-size: 24px; margin: 0 0 10px 0; color: #fff; }
-        .card p { font-size: 16px; color: #a1a1a6; line-height: 1.5; margin: 0; }
-
-        /* 浮动购买按钮 */
-        .buy-btn {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%);
-            background: #0071e3; color: white;
-            padding: 12px 40px; border-radius: 25px;
-            text-decoration: none; font-weight: bold;
-            box-shadow: 0 10px 20px rgba(0,113,227,0.3);
-            z-index: 1000;
-        }
-
-        /* 简单的动画 */
-        .fade-in {
-            animation: fadeIn 1.5s ease forwards;
-            opacity: 0; transform: translateY(20px);
-        }
         @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* 统一产品展示样式 */
+        .hero-section {
+            height: 80vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 20px;
+        }
+
+        .title { font-size: 48px; font-weight: 600; margin-bottom: 10px; }
+        .subtitle { font-size: 20px; color: var(--text-gray); margin-bottom: 30px; }
+        
+        .product-image {
+            font-size: 100px; filter: drop-shadow(0 0 30px rgba(255,215,0,0.3));
+            margin-bottom: 40px; animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .buy-btn {
+            background: #0071e3; color: white; padding: 12px 30px;
+            border-radius: 20px; text-decoration: none; font-weight: 500;
+            transition: 0.3s;
+        }
+        .buy-btn:hover { background: #147ce5; transform: scale(1.05); }
+
+        /* 参数网格 */
+        .specs-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            padding: 20px; max-width: 600px; margin: 0 auto 50px auto;
+        }
+        .spec-box {
+            background: var(--card-bg); padding: 20px; border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .spec-box h4 { color: var(--accent); font-size: 20px; }
+        .spec-box p { font-size: 12px; color: var(--text-gray); margin-top: 5px; }
+
+        footer { padding: 40px 20px; text-align: center; color: #444; font-size: 10px; }
     </style>
 </head>
 <body>
 
-<nav><span>Pineapple Pro</span></nav>
+<nav>
+    <ul>
+        <li onclick="showPage('phone')">手机</li>
+        <li onclick="showPage('pad')">平板</li>
+        <li onclick="showPage('watch')">手表</li>
+        <li onclick="showPage('mac')">电脑</li>
+    </ul>
+</nav>
 
-<section class="hero">
-    <h1 class="fade-in">菠萝 16 Pro</h1>
-    <p class="fade-in" style="animation-delay: 0.3s">强得很，也甜得很。</p>
-    <div class="phone-preview fade-in" style="animation-delay: 0.6s">
-        <div class="island"></div>
-        <div class="screen-content">🍍</div>
+<div id="phone" class="page-content active">
+    <section class="hero-section">
+        <div class="product-image">📱</div>
+        <h1 class="title">Pineapple 16 Pro</h1>
+        <p class="subtitle">强得很，也甜得很。</p>
+        <a href="#" class="buy-btn">立即购买</a>
+    </section>
+    <div class="specs-grid">
+        <div class="spec-box"><h4>P18 Pro</h4><p>地表最强芯片</p></div>
+        <div class="spec-box"><h4>全钛金属</h4><p>更轻更硬更菠萝</p></div>
     </div>
-</section>
+</div>
 
-<section class="features">
-    <div class="card">
-        <h3>A18 菠萝芯片</h3>
-        <p>3纳米制程，性能快到飞起。玩游戏不发烫，只有淡淡的菠萝清香。</p>
+<div id="pad" class="page-content">
+    <section class="hero-section">
+        <div class="product-image">平板</div>
+        <h1 class="title">Pineapple Pad Pro</h1>
+        <p class="subtitle">不仅是屏幕，更是画布。</p>
+        <a href="#" class="buy-btn">立即购买</a>
+    </section>
+    <div class="specs-grid">
+        <div class="spec-box"><h4>M4 芯片</h4><p>性能怪兽</p></div>
+        <div class="spec-box"><h4>OLED 屏</h4><p>极致丝滑体验</p></div>
     </div>
-    <div class="card">
-        <h3>全钛金属外壳</h3>
-        <p>比钢还硬，比铝还轻。握在手里，就像握住了未来。</p>
-    </div>
-    <div class="card" style="margin-bottom: 100px;">
-        <h3>4800万像素</h3>
-        <p>超感光菠萝镜头，把每一片叶子都拍得清清楚楚。</p>
-    </div>
-</section>
+</div>
 
-<a href="javascript:alert('预订成功！');" class="buy-btn">立即购买</a>
+<div id="watch" class="page-content">
+    <section class="hero-section">
+        <div class="product-image">⌚</div>
+        <h1 class="title">Pineapple Watch</h1>
+        <p class="subtitle">时刻在线，关注你的心跳。</p>
+        <a href="#" class="buy-btn">立即购买</a>
+    </section>
+    <div class="specs-grid">
+        <div class="spec-box"><h4>全天续航</h4><p>不再有电量焦虑</p></div>
+        <div class="spec-box"><h4>健康监测</h4><p>心率血氧一目了然</p></div>
+    </div>
+</div>
+
+<div id="mac" class="page-content">
+    <section class="hero-section">
+        <div class="product-image">💻</div>
+        <h1 class="title">Pineapple Mac</h1>
+        <p class="subtitle">工作，从此游刃有余。</p>
+        <a href="#" class="buy-btn">立即购买</a>
+    </section>
+    <div class="specs-grid">
+        <div class="spec-box"><h4>32GB 统一内存</h4><p>多开不卡顿</p></div>
+        <div class="spec-box"><h4>视网膜显示屏</h4><p>色彩精准到位</p></div>
+    </div>
+</div>
+
+<footer>
+    Copyright © 2025 Pineapple Inc. All rights reserved.<br>
+    此为演示页面，非真实产品。
+</footer>
+
+<script>
+    function showPage(pageId) {
+        // 隐藏所有页面
+        const pages = document.querySelectorAll('.page-content');
+        pages.forEach(page => page.classList.remove('active'));
+        
+        // 显示点击的页面
+        const targetPage = document.getElementById(pageId);
+        targetPage.classList.add('active');
+
+        // 滚动回到顶部
+        window.scrollTo(0, 0);
+
+        // 手机震动反馈（如果浏览器支持）
+        if (window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    }
+</script>
 
 </body>
 </html>
